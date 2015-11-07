@@ -14,6 +14,7 @@ import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Matrix4f;
@@ -47,7 +48,7 @@ public class Application3D extends Thread {
 	// Window properties
 	private int windowWidth 	= 1280;
 	private int windowHeight 	= 720;
-	private String windowTitle	= "Michael's Engine";
+	private String windowTitle	= "WikiDungeon";
 	
 	// Instances
 	private ArrayList<Renderer3D> newRenderInstances;
@@ -91,6 +92,7 @@ public class Application3D extends Thread {
 	public void run(){
 		// Create GL context
 		initOpenGL();
+		
 		camera 	 = new Camera( 80.0f, windowWidth, windowHeight, this );
 		shader 	 = new Shader( "shaders/sy_vertex.glsl", "shaders/sy_frag.glsl");
 		shader2D = new Shader( "shaders/sy_vertex2D.glsl", "shaders/sy_frag2D.glsl");
@@ -157,6 +159,8 @@ public class Application3D extends Thread {
 			e.printStackTrace();
 			System.exit( -1 );
 		}
+		int vao = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(vao);
 		
 		// Initialise screen properties:
 		glClearColor( 0.6f, 0.7f, 1.0f, 1.0f );
