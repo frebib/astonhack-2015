@@ -93,13 +93,13 @@ public class RenderUtils {
             fontBSansVeryLarge = new GLFont( ft.deriveFont(Font.PLAIN, 48));
             
             // Build Large font
-            fontBSansLarge  = new GLFont( ft.deriveFont( Font.PLAIN, 28 ));
+            fontBSansLarge     = new GLFont( ft.deriveFont( Font.PLAIN, 28 ));
             
             // Build Medium font
-            fontBSansMedium  = new GLFont( ft.deriveFont( Font.PLAIN, 18 ));
+            fontBSansMedium    = new GLFont( ft.deriveFont( Font.PLAIN, 18 ));
             
             // Build small font
-            fontBSansSmall  = new GLFont( ft.deriveFont( Font.PLAIN, 14 ));
+            fontBSansSmall     = new GLFont( ft.deriveFont( Font.PLAIN, 14 ));
             
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -108,7 +108,7 @@ public class RenderUtils {
     }
     
     private void prepareTextures(){
-        texPlain = Application3D.getApp().getResources().loadTexture( "res/GUI/scGuiWhite.png", "tex_plain" );
+        texPlain = Application3D.getApp().getResources().loadTexture( "res/textures/scGuiWhite.png", "tex_plain" );
     }
     //////////////////////////////////////////////////////////////////
     // User Methods

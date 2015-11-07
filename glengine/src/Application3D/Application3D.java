@@ -176,7 +176,7 @@ public class Application3D extends Thread {
 	private void loadUniversalResources(){
 	    
 	    // Load popup graphics
-	    Texture sprPopupDrop           = resources.loadTexture( "res/GUI/sprPopupDrop.png", "sprPopupDrop" );
+	   /* Texture sprPopupDrop           = resources.loadTexture( "res/GUI/sprPopupDrop.png", "sprPopupDrop" );
 	    Texture sprPopupDrop2          = resources.loadTexture( "res/GUI/sprPopupDrop2.png", "sprPopupDrop2" );
 	    Texture sprPopupDrop3          = resources.loadTexture( "res/GUI/sprPopupDrop3.png", "sprPopupDrop3" );
 	    Texture sprPopupDrop4          = resources.loadTexture( "res/GUI/sprPopupDrop4.png", "sprPopupDrop4" );
@@ -210,7 +210,7 @@ public class Application3D extends Thread {
 	    
 	    VertexBuffer modPlayerPiece = ModelImporter.importModel( "res/models/modelGamePiece.gmmod" );
 	    modPlayerPiece.freeze();
-	    resources.addModel( modPlayerPiece, "modPlayerPiece" );
+	    resources.addModel( modPlayerPiece, "modPlayerPiece" );*/
 	}
 	
 /////////////////////////////////////////////////////////////////
@@ -228,7 +228,6 @@ public class Application3D extends Thread {
 	synchronized private void update(){
 		Keyboard.poll();
 		camera.update();
-		this.activeRoom.update();
 		for( Renderer3D r : renderInstances ) r.update();
 	}
 	// RENDER 3D
@@ -238,7 +237,6 @@ public class Application3D extends Thread {
 		{
 			camera.setProjection2D(shader2D);
 			shader2D.setUniformColour( 1, 1, 1, 1 );
-			this.activeRoom.render2D();
 			for ( Renderer3D r : renderInstances ) r.render2D();
 		}
 		this.resetShader();
@@ -253,7 +251,7 @@ public class Application3D extends Thread {
 			camera.setProjection3D(shader);
 			this.matrixWorldBind();
 			shader.setUniformColour( 1, 1, 1, 1 );
-			this.activeRoom.render3D();
+			//this.activeRoom.render3D();
 			for ( Renderer3D r : renderInstances ) r.render3D();
 		}
 		this.resetShader();

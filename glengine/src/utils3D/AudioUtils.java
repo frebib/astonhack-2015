@@ -15,12 +15,12 @@ public class AudioUtils {
     public AudioUtils( ){
         
         // Load some general sounds
-        this.loadSound( "res/sfx/sfRollover.wav",          "buttonClick" );
+       /* this.loadSound( "res/sfx/sfRollover.wav",          "buttonClick" );
         this.loadSound( "res/sfx/sfClick.wav",     "buttonHover" );
         this.loadSound( "res/music/sm_music_main.wav",          "musicMain" );
         this.loadSound( "res/sfx/sf_mrx_turn_start.wav",        "mrxTurnStart" );
         this.loadSound( "res/sfx/sf_detective_turn_start.wav",  "detectiveTurnStart" );
-        this.playMusic( "musicMain" );
+        this.playMusic( "musicMain" );*/
     }
     /**
      * Loads a new sound file and adds it to the global resource system with the given key.
