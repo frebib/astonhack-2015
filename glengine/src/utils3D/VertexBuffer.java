@@ -7,6 +7,8 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -147,13 +149,40 @@ public class VertexBuffer {
 	
 	/// GENERATORS
 	public void addFloor( float x1, float y1, float x2, float y2, float z){
-        this.add( x1, y2, z, 1, 1, 1, 1, 0, 1, 0, 0, 1);
+        this.add( x1, y1, z, 1, 1, 1, 1, 0, 1, 0, 0, 1);
+        this.add( x1, y2, z, 1, 1, 1, 1, 0, 0, 0, 0, 1);
+        this.add( x2, y2, z, 1, 1, 1, 1, 1, 0, 0, 0, 1);
+        
+        this.add( x2, y1, z, 1, 1, 1, 1, 1, 1, 0, 0, 1);
+        this.add( x1, y1, z, 1, 1, 1, 1, 0, 1, 0, 0, 1);
+        this.add( x2, y2, z, 1, 1, 1, 1, 1, 0, 0, 0, 1);
+	}
+	
+	public void addWall( float x1, float y1, float z1, float x2, float y2, float z2){
+        /*this.add( x1, y2, z, 1, 1, 1, 1, 0, 1, 0, 0, 1);
         this.add( x1, y1, z, 1, 1, 1, 1, 0, 0, 0, 0, 1);
         this.add( x2, y1, z, 1, 1, 1, 1, 1, 0, 0, 0, 1);
         
         this.add( x2, y2, z, 1, 1, 1, 1, 1, 1, 0, 0, 1);
         this.add( x1, y2, z, 1, 1, 1, 1, 0, 1, 0, 0, 1);
-        this.add( x2, y1, z, 1, 1, 1, 1, 1, 0, 0, 0, 1);
+        this.add( x2, y1, z, 1, 1, 1, 1, 1, 0, 0, 0, 1);*/
+		this.add( x2, y2, z1, 1, 1, 1, 1, 1, 1, 0, 0, 1);
+		this.add( x1, y1, z1, 1, 1, 1, 1, 0, 1, 0, 0, 1);
+		this.add( x1, y1, z2, 1, 1, 1, 1, 0, 0, 0, 0, 1);
+		
+		this.add( x2, y2, z1, 1, 1, 1, 1, 1, 1, 0, 0, 1);
+		this.add( x1, y1, z2, 1, 1, 1, 1, 0, 0, 0, 0, 1);
+		this.add( x2, y2, z2, 1, 1, 1, 1, 1, 0, 0, 0, 1);
+	}
+	
+	/**
+	 * Adds a model to the model
+	 * @param vertexBuffer
+	 */
+	public void addModel( VertexBuffer vertexBuffer, Matrix4f transformationMatrix ) {
+		for( Vertex v : vertexBuffer.vertices ) {
+			this.add( v.transform( transformationMatrix ));
+		}
 	}
 	
 	public void addQuad( float x1, float y1, float x2, float y2 ){
@@ -175,4 +204,30 @@ public class VertexBuffer {
         this.add( x1, y2, 0, 1, 1, 1, 1, tx1, ty2, 0, 0, 1);
         this.add( x2, y1, 0, 1, 1, 1, 1, tx2, ty1, 0, 0, 1);
     }
+	
+	public void prepareNormals(){
+		for( int g = 0; g < vertices.size(); g += 3 ){
+			Vertex A, B, C;
+			A = vertices.get(g);
+			B = vertices.get(g+1);
+			C = vertices.get(g+2);
+			
+			float [] Ac, Bc, Cc;
+			Ac = A.getXYZ();
+			Bc = B.getXYZ();
+			Cc = C.getXYZ();
+			
+			Vector3f AB, AC;
+			AB = new Vector3f( Bc[0]-Ac[0], Bc[1]-Ac[1], Bc[2]-Ac[2]);
+			AC = new Vector3f( Cc[0]-Ac[0], Cc[1]-Ac[1], Cc[2]-Ac[2]);
+			
+			Vector3f normal = new Vector3f();
+			Vector3f.cross(AB, AC, normal);
+			normal.normalise();
+			
+			A.setNML(normal.x, normal.y, normal.z);
+			B.setNML(normal.x, normal.y, normal.z);
+			C.setNML(normal.x, normal.y, normal.z);
+		}
+	}
 }

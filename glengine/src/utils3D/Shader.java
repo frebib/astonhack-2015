@@ -6,6 +6,12 @@ import Application3D.Application3D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+
+import org.lwjgl.BufferUtils;
+
+import com.sun.prism.impl.BufferUtil;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -30,8 +36,13 @@ public class Shader {
 	private int uniformMatrixWorldInverseLocation = 0;
 	private int uniformMatrixViewInverseLocation = 0;
 	private int uniformLightingLocation = 0;
+	private int uniformLightPos = 0;
+	private ByteBuffer lightBuffer;
+	
+	private float[][] lights;
 	
 	public Shader( String vertexShader, String fragmentShader ) {
+		lightBuffer = BufferUtils.createByteBuffer( 8 * 4 * 4 );
 		// Load shader vertex and fragment component
 		vertexShaderIndex 	= loadShader( vertexShader, GL_VERTEX_SHADER );
 		fragmentShaderIndex = loadShader( fragmentShader, GL_FRAGMENT_SHADER );
@@ -59,10 +70,13 @@ public class Shader {
 		matrixWorldLocation 	 = glGetUniformLocation( programIndex, "matrixModel" );
 		uniformColourLocation    = glGetUniformLocation( programIndex, "colour" );
 		uniformGrayscaleLocation = glGetUniformLocation( programIndex, "grayscale" );
+		uniformLightPos          = glGetUniformLocation( programIndex, "u_light" );
 		uniformMatrixWorldInverseLocation = glGetUniformLocation( programIndex, "matrixModelInverse" );
 		uniformMatrixViewInverseLocation = glGetUniformLocation( programIndex, "matrixViewInverse" );
 		uniformLightingLocation           = glGetUniformLocation( programIndex, "lighting" );
 		Application3D.getApp().appCheckGLError( "SHADER END");
+		
+		lights = new float[8][4];
 	}
 	
 	private int loadShader(String filename, int type) {
@@ -141,11 +155,27 @@ public class Shader {
 	    setUniformGrayscaleRatio( gs?1.0f:0.0f );
 	}
 	
-	public void setUniformLighting( boolean lighting ){
-	    glUniform1f( uniformLightingLocation, lighting?1.0f:0.0f );
+	public void setLight( int id, float x, float y, float z, float range ){
+	    /*
+	    glUniform*/
+		lights[id][0] = x;
+		lights[id][1] = y;
+		lights[id][2] = z;
+		lights[id][3] = range;
 	}
 	
-	
+	public void setUniformLighting(){
+		FloatBuffer bufferedLights;
+		
+		bufferedLights = lightBuffer.asFloatBuffer();
+		bufferedLights.rewind();
+		for ( int i=0; i < 8; i++ ) {
+			bufferedLights.put( lights[i] );
+		}
+		bufferedLights.flip();
+		//glUniformMatrix4( uniformLightPos, false, bufferedLights );
+		glUniform4(uniformLightPos, bufferedLights);
+	}
 	
 	public void bind(){
 		glUseProgram( programIndex );

@@ -1,5 +1,9 @@
 package utils3D;
 
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
+
 public class Vertex {
     // Vertex data
     private float[] xyzw = new float[] {0f, 0f, 0f, 1f};
@@ -147,4 +151,16 @@ public class Vertex {
     public float[] getUV() {
         return new float[] {this.uv[0], this.uv[1]};
     }
+
+	public Vertex transform(Matrix4f transformationMatrix) {
+		// TODO Auto-generated method stub
+		Vertex newV  = new Vertex();
+		float[] a    = this.xyzw;
+		Vector4f pos = new Vector4f(a[0], a[1], a[2], 1.0f); 
+		Matrix4f.transform(transformationMatrix, pos, pos);
+		
+		newV.setXYZ(pos.x, pos.y, pos.z);
+		newV.setUV(this.uv[0], this.uv[1]);
+		return newV;
+	}
 }
