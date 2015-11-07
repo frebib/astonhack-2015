@@ -18,8 +18,8 @@ out vec3 pass_Normal;
 
 uniform vec4 colour;
 
-#define MAX 400
-#define MIN 238
+#define MAX 1024
+#define MIN 768
 
 void main(void) {
 	gl_Position = matrixProjection * matrixView * matrixModel * in_Position;
