@@ -1,7 +1,7 @@
 package com.dungeoncrawler.generator;
 
 public enum Tile {
-	Empty(0), Room(1), Corridor(2), Wall(3, true), Door(4);
+	EMPTY(0), ROOM(1), CORRIDOR(2), WALL(3, true), DOOR(4);
 
 	private final int id;
 	public final boolean solid;
