@@ -20,8 +20,9 @@ public class Dungeon {
     public Node[][] tileNodes;
     public ArrayList<Node<CoordTile>> nodes;
     public ArrayList<Edge> corridors;
-    
+    public GeneratorOptions opts;
     public Dungeon(GeneratorOptions opts) {
+    	this.opts = opts;
         Generator gen = new Generator(opts);
         generator = gen.rand;
 
@@ -45,7 +46,26 @@ public class Dungeon {
         }
         for (int y = 0; y < tiles[0].length; y++){
         	tiles[0][y] = Tile.WALL;
-        	tiles[0][tiles.length-1] = Tile.WALL;
+        	tiles[tiles.length-1][y] = Tile.WALL;
+        }
+        for (int x = 0; x < tiles.length; x++){
+        	for (int y = 0; y < tiles[0].length; y++){
+        		char c =' ';
+        		switch( tiles[x][y] ) {
+	        		case WALL:
+	        			c = '#';
+	        		break;
+	        		case ROOM:
+	        			c = '.';
+	        		break;
+	        		case CORRIDOR:
+	        			c = '*';
+	        		break;
+        		}
+        		
+        		System.out.print(c);
+        	}
+        	System.out.println();
         }
     }
 
