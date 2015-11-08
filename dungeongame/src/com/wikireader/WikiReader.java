@@ -46,7 +46,7 @@ public class WikiReader {
 		System.out.println(Arrays.toString(ss));
 		
 		// Call on first image (Rather than all for now)
-		int max = Math.min(5, ss.length);
+		int max = Math.min(10, ss.length);
 		String[] slinks = new String[max];
 		if( ss.length > 0 ) {
 			

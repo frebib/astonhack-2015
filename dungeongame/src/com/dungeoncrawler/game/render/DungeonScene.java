@@ -2,6 +2,7 @@ package com.dungeoncrawler.game.render;
 
 import Application3D.Application3D;
 import Application3D.Renderer3D;
+import sun.swing.plaf.WindowsKeybindings;
 import utils3D.Camera;
 import utils3D.ModelImporter;
 import utils3D.RenderUtils;
@@ -29,12 +30,14 @@ import com.dungeoncrawler.generator.search.IHeuristic;
 import com.dungeoncrawler.generator.search.PriorityQueue;
 import com.sun.media.sound.ModelChannelMixer;
 import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+import com.wikireader.WikiPage;
+import com.wikireader.WikiReader;
 
 public class DungeonScene implements Renderer3D {
 
 	private Application3D app3D = Application3D.getApp();
 	private Texture texFloor, texWall, texDungeon, texDetail;
-	private VertexBuffer sceneFloors, sceneWalls, sceneDetails, archModel, wallModel, floorModel, ceilingModel, candelabraModel, torch1Model;
+	private VertexBuffer sceneFloors, sceneWalls, sceneDetails, archModel, doorModel, wallModel, floorModel, ceilingModel, candelabraModel, torch1Model;
 	
 	private Tile[][] map;
 	private int mapSize = 30;
@@ -45,8 +48,11 @@ public class DungeonScene implements Renderer3D {
 	private ArrayList<Entity> entities;
 	private PointLight playerLight;
 	private Random generator;
-	
+	Dungeon  d;
 	float camWobbleBoyes;
+	
+	Vector3f telepos;
+	boolean teleport = false;
 
 	float vspeed = 0f;
 	
@@ -71,68 +77,89 @@ public class DungeonScene implements Renderer3D {
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);*/
 		//GL11.glTexParameteri(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 		
+		// ********************************************** //
+		// Load shit off wikipedia
+		WikiPage wp = null;
+		try {
+			wp = WikiReader.getPage(/*WikiReader.getRandomPage()*/"Queen_(band)");
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println("BODIED");
+			System.exit(1);
+		}
+		
 		
 		
 		// *********************************************** //
 		// Create map
-		Dungeon d = new Dungeon(new GeneratorOptions());
+		d = new Dungeon( new GeneratorOptions(wp.Title.hashCode()));
+		
 		map = d.tiles;
 		mapSize = map.length;
-		/*map = new Tile[mapSize][mapSize];
-		for( int i=0; i < mapSize; i++ ) {
-			for( int j=0; j < mapSize; j++ ) {
-				map[i][j] = Tile.EMPTY;
-			}
-		}
-		for( int i=10; i < 20; i++ ) {
-			for( int j=10; j < 15; j++ ) {
-				map[i][j] = Tile.ROOM;
-			}
-		}
-		
-		for( int i=20; i < 25; i++ ) {
-			for( int j=12; j < 13; j++ ) {
-				map[i][j] = Tile.CORRIDOR;
-			}
-		}
-		map[24][10] = Tile.CORRIDOR;
-		map[24][11] = Tile.CORRIDOR;
-		map[24][13] = Tile.CORRIDOR;
-		map[24][14] = Tile.CORRIDOR;*/
-		
-		
-		
 		// place walls in
-		for( int i=0; i < d.opts.width; i++ ) {
-			for( int j=0; j < d.opts.height; j++ ) {
-				
-				
-				if( i==0 || j == 0 || i == d.opts.width-1 || j == d.opts.height-1 ) {
-					map[i][j] = Tile.WALL;
-				}else {
-					if( map[i][j] == Tile.CORRIDOR || map[i][j] == Tile.ROOM ) {
-						Tile up, down, left, right;
-						up    = map[i][j-1];
-						down  = map[i][j+1];
-						left  = map[i-1][j];
-						right = map[i+1][j];
+				for( int i=0; i < d.opts.width; i++ ) {
+					for( int j=0; j < d.opts.height; j++ ) {
 						
-						if( up == Tile.EMPTY ) {
-							map[i][j-1] = Tile.WALL;
-						}
-						if( down == Tile.EMPTY ) {
-							map[i][j+1] = Tile.WALL;
-						}
-						if( left == Tile.EMPTY ) {
-							map[i-1][j] = Tile.WALL;
-						}
-						if( right == Tile.EMPTY ) {
-							map[i+1][j] = Tile.WALL;
+						
+						if( i==0 || j == 0 || i == d.opts.width-1 || j == d.opts.height-1 ) {
+							map[i][j] = Tile.WALL;
+						}else {
+							if( map[i][j] == Tile.CORRIDOR || map[i][j] == Tile.ROOM ) {
+								Tile up, down, left, right;
+								up    = map[i][j-1];
+								down  = map[i][j+1];
+								left  = map[i-1][j];
+								right = map[i+1][j];
+								
+								if( up == Tile.EMPTY ) {
+									map[i][j-1] = Tile.WALL;
+								}
+								if( down == Tile.EMPTY ) {
+									map[i][j+1] = Tile.WALL;
+								}
+								if( left == Tile.EMPTY ) {
+									map[i-1][j] = Tile.WALL;
+								}
+								if( right == Tile.EMPTY ) {
+									map[i+1][j] = Tile.WALL;
+								}
+							}
 						}
 					}
 				}
-			}
-		}
+				
+		// *********************************************** //
+				// Slap in SOme DOoors
+				int doorsPlaced = 0;
+				while( doorsPlaced < 5 ) {
+					int x, y;
+					x = d.generator.nextInt(d.opts.width-1);
+					y = d.generator.nextInt(d.opts.height-1);
+					
+					int touching = 0;
+					try{
+						Tile up, down, left, right;
+						up    = map[x][y-1];
+						down  = map[x][y+1];
+						left  = map[x-1][y];
+						right = map[x+1][y];
+						
+						touching = (up==Tile.ROOM?1:0)+(down==Tile.ROOM?1:0)
+									+(left==Tile.ROOM?1:0)+(right==Tile.ROOM?1:0);
+					}catch( Exception e){
+						continue;
+					}
+					
+					if( map[x][y] == Tile.WALL && touching > 0) {
+						map[x][y] = Tile.DOOR;
+						doorsPlaced++;
+					}
+				}
+				
+		
+		
 		
 		// *********************************************** //
 		
@@ -148,7 +175,7 @@ public class DungeonScene implements Renderer3D {
 		ceilingModel 	= ModelImporter.importModel("res/models/Ceiling.gmmod");
 		candelabraModel = ModelImporter.importModel("res/models/Candelabra.gmmod");
 		torch1Model     = ModelImporter.importModel("res/models/Torch1.gmmod");
-	
+		doorModel		= ModelImporter.importModel("res/models/ArchDoor.gmmod");
 		// Generate block:
 		//block = ModelImporter.importModel("res/models/block.gmmod");
 		sceneFloors = generateScene_Floors( map );
@@ -160,16 +187,17 @@ public class DungeonScene implements Renderer3D {
 		VertexBuffer entityModel = ModelImporter.importModel("res/models/Enemy.gmmod");
 		
 		// Find spawn
-		for( int i=0; i < mapSize; i++ ) {
-			for( int j=0; j < mapSize; j++ ) {
-				if( map[i][j].walkable ) {
-					spawnX = (float) ((i+0.5)*scale);
-					spawnY = (float) ((j+0.5)*scale);
-					i = mapSize;
-					j = mapSize;
-				}
+		/*for( int i=0; i < mapSize; i++ ) {
+			for( int j=0; j < mapSize; j++ ) {*/
+				//if( map[i][j].walkable ) {
+		
+					
+		
+					spawnX = (float) ((d.rooms[0].getCenterX())*scale);
+					spawnY = (float) ((d.rooms[0].getCenterY())*scale);
+		/*		}
 			}
-		}
+		}*/
 		
 		// Set initial position
 		app3D.getCamera().setPosition(new Vector3f( spawnX, spawnY, 16.0f ));
@@ -374,20 +402,20 @@ public class DungeonScene implements Renderer3D {
 		boolean pressed = false;
 		// Movement controls
 		if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-			if( map_free(position.x - direction.x - playerPadding*sign(direction.x), position.y )){
+			if( map_free(position.x - direction.x - playerPadding*sign(direction.x), position.y, position )){
 				position.x -= direction.x;
 			}
-			if( map_free(position.x , position.y - direction.y - playerPadding*sign(direction.y) )){
+			if( map_free(position.x , position.y - direction.y - playerPadding*sign(direction.y), position )){
 				position.y -= direction.y;
 			}
 			pressed = true;
 			//Vector3f.sub(position, direction, position);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-			if( map_free(position.x + direction.x +  playerPadding*sign(direction.x), position.y )){
+			if( map_free(position.x + direction.x +  playerPadding*sign(direction.x), position.y, position )){
 				position.x += direction.x;
 			}
-			if( map_free(position.x , position.y + direction.y + playerPadding*sign(direction.y) )){
+			if( map_free(position.x , position.y + direction.y + playerPadding*sign(direction.y), position )){
 				position.y += direction.y;
 			}
 			pressed = true;
@@ -396,10 +424,10 @@ public class DungeonScene implements Renderer3D {
 		if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
 			
 			direction.set((float) Math.cos(yaw) * speed, (float) Math.sin(yaw) * speed, 0);
-			if( map_free(position.x - direction.x - playerPadding*sign(direction.x), position.y )){
+			if( map_free(position.x - direction.x - playerPadding*sign(direction.x), position.y, position )){
 				position.x -= direction.x;
 			}
-			if( map_free(position.x , position.y - direction.y - playerPadding*sign(direction.y) )){
+			if( map_free(position.x , position.y - direction.y - playerPadding*sign(direction.y), position )){
 				position.y -= direction.y;
 			}
 			pressed = true;
@@ -408,10 +436,10 @@ public class DungeonScene implements Renderer3D {
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
 			direction.set((float) Math.cos(yaw) * speed, (float) Math.sin(yaw) * speed, 0);
-			if( map_free(position.x + direction.x + playerPadding*sign(direction.x), position.y )){
+			if( map_free(position.x + direction.x + playerPadding*sign(direction.x), position.y, position )){
 				position.x += direction.x;
 			}
-			if( map_free(position.x , position.y + direction.y + playerPadding*sign(direction.y) )){
+			if( map_free(position.x , position.y + direction.y + playerPadding*sign(direction.y), position )){
 				position.y += direction.y;
 			}
 			pressed = true;
@@ -439,6 +467,11 @@ public class DungeonScene implements Renderer3D {
 		
 		if( pressed ) {
 			cam.wobble += 0.38*direction.length();
+		}
+		
+		if( teleport ) {
+			position = telepos;
+			teleport = false;
 		}
 		
 		cam.setPosition( position );
@@ -484,6 +517,9 @@ public class DungeonScene implements Renderer3D {
 						(right == Tile.CORRIDOR||right == Tile.ROOM) && (down == Tile.CORRIDOR|| up == Tile.ROOM) ){
 						corner = true;
 					}
+					if( up == Tile.DOOR || down == Tile.DOOR || left == Tile.DOOR || right == Tile.DOOR) {
+						corner = true;
+					}
 					if( !corner ) {
 						Matrix4f mf = new Matrix4f();
 						mf.setIdentity();
@@ -513,14 +549,14 @@ public class DungeonScene implements Renderer3D {
 			for( int j=1; j < mapSize-1; j++ ) {
 
 				// If is wall tile
-				if (map[i][j] == Tile.WALL ) {
+				if (map[i][j] == Tile.WALL || map[i][j] == Tile.DOOR ) {
 					// Get surrounding tiles
 					Tile up, down, left, right;
 					up    = map[i][j-1];
 					down  = map[i][j+1];
 					left  = map[i-1][j];
 					right = map[i+1][j];
-					
+					boolean doorplaced = false;
 					// UP
 					if( up == Tile.ROOM || up == Tile.CORRIDOR ) {
 						//vb.addWall(i, j, 0, i+1, j, 1);
@@ -530,6 +566,11 @@ public class DungeonScene implements Renderer3D {
 						mf.translate(new Vector3f(i, j, 0.0f));
 						mf.rotate((float) Math.PI, new Vector3f( 0.0f, 0.0f, 1.0f));
 						vb.addModel(wallModel, mf);
+						
+						if( map[i][j] == Tile.DOOR && !doorplaced ) {
+							vb.addModel(doorModel, mf);
+							doorplaced = true;
+						}
 					}
 					
 					// DOWN
@@ -540,6 +581,11 @@ public class DungeonScene implements Renderer3D {
 						mf.translate(new Vector3f(i+1, j+1, 0.0f));
 						//mf.rotate((float) Math.PI, new Vector3f( 0.0f, 0.0f, 1.0f));
 						vb.addModel(wallModel, mf);
+						
+						if( map[i][j] == Tile.DOOR && !doorplaced ) {
+							vb.addModel(doorModel, mf);
+							doorplaced = true;
+						}
 					}
 					
 					// LEFT
@@ -550,6 +596,11 @@ public class DungeonScene implements Renderer3D {
 						mf.translate(new Vector3f(i, j+1, 0.0f));
 						mf.rotate((float) Math.PI/2, new Vector3f( 0.0f, 0.0f, 1.0f));
 						vb.addModel(wallModel, mf);
+						
+						if( map[i][j] == Tile.DOOR && !doorplaced ) {
+							vb.addModel(doorModel, mf);
+							doorplaced = true;
+						}
 					}
 					
 					// RIGHT
@@ -561,7 +612,10 @@ public class DungeonScene implements Renderer3D {
 						mf.rotate((float) -Math.PI/2, new Vector3f( 0.0f, 0.0f, 1.0f));
 						vb.addModel(wallModel, mf);
 						
-						
+						if( map[i][j] == Tile.DOOR && !doorplaced ) {
+							vb.addModel(doorModel, mf);
+							doorplaced = true;
+						}
 					}
 				}
 			}
@@ -642,7 +696,7 @@ public class DungeonScene implements Renderer3D {
 					
 					int count = ai.size();
 					if( count > 0 ) {
-						if ( generator.nextDouble()*100.0 <= 25.0 ){
+						if ( generator.nextDouble()*100.0 <= 45.0 ){
 							Matrix4f mf = new Matrix4f();
 							mf.setIdentity();
 							mf.translate(new Vector3f(i, j+1, 0.5f));
@@ -691,7 +745,7 @@ public class DungeonScene implements Renderer3D {
 		return vb;
 	}
 	
-	public boolean map_free( float x, float y ) {
+	public boolean map_free( float x, float y, Vector3f pos ) {
 		if( Keyboard.isKeyDown(Keyboard.KEY_C)){
 			return true;
 		}
@@ -702,6 +756,15 @@ public class DungeonScene implements Renderer3D {
 		if( gX >= 0 && gX < mapSize ) {
 			if( gY >= 0 && gY <= mapSize ) {
 				Tile a = map[gX][gY];
+				if( a == Tile.DOOR ) {
+					Camera cam = app3D.getCamera();
+					
+					int room = generator.nextInt(d.rooms.length-1);
+					telepos =(new Vector3f((float)d.rooms[room].getCenterX()*scale,
+							(float)d.rooms[room].getCenterY()*scale, 16.0f ));
+					teleport = true;
+					return true;
+				}
 				if( a == Tile.ROOM || a == Tile.EMPTY || a == Tile.CORRIDOR ) {
 					return true;
 				}
