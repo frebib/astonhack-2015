@@ -63,14 +63,15 @@ public class DungeonScene implements Renderer3D {
 		lights    = new ArrayList<>();
 		entities  = new ArrayList<>();
 		
+		float spawnX=0, spawnY=0;
+		
 		// Setup rendering properties
 		/*GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_)
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);*/
 		//GL11.glTexParameteri(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 		
-		// Set initial position
-		app3D.getCamera().setPosition(new Vector3f( 400.0f, 400.0f, 16.0f ));
+		
 		
 		// *********************************************** //
 		// Create map
@@ -102,11 +103,11 @@ public class DungeonScene implements Renderer3D {
 		
 		
 		// place walls in
-		for( int i=0; i < mapSize; i++ ) {
-			for( int j=0; j < mapSize; j++ ) {
+		for( int i=0; i < d.opts.width; i++ ) {
+			for( int j=0; j < d.opts.height; j++ ) {
 				
 				
-				if( i==0 || j == 0 || i == mapSize-1 || j == mapSize-1 ) {
+				if( i==0 || j == 0 || i == d.opts.width-1 || j == d.opts.height-1 ) {
 					map[i][j] = Tile.WALL;
 				}else {
 					if( map[i][j] == Tile.CORRIDOR || map[i][j] == Tile.ROOM ) {
@@ -158,6 +159,20 @@ public class DungeonScene implements Renderer3D {
 		// Load Entity resources
 		VertexBuffer entityModel = ModelImporter.importModel("res/models/Enemy.gmmod");
 		
+		// Find spawn
+		for( int i=0; i < mapSize; i++ ) {
+			for( int j=0; j < mapSize; j++ ) {
+				if( map[i][j].walkable ) {
+					spawnX = (float) ((i+0.5)*scale);
+					spawnY = (float) ((j+0.5)*scale);
+					i = mapSize;
+					j = mapSize;
+				}
+			}
+		}
+		
+		// Set initial position
+		app3D.getCamera().setPosition(new Vector3f( spawnX, spawnY, 16.0f ));
 		
 		//***************************************************************** //
 		// Spawn in Entities
@@ -407,7 +422,7 @@ public class DungeonScene implements Renderer3D {
 		{
 			if(position.z == 16f)
 			{
-				vspeed = 2f;
+				vspeed = 1.4f;
 			}
 		}
 		if (position.z + vspeed <= 16)
@@ -417,7 +432,7 @@ public class DungeonScene implements Renderer3D {
 		}
 		else
 		{
-			vspeed-=0.1f;
+			vspeed-=0.08f;
 		}
 		System.out.println(vspeed);
 		position.z += vspeed;
