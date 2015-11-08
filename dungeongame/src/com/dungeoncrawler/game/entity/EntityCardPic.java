@@ -41,9 +41,11 @@ public class EntityCardPic extends Entity {
 		pather = new EntityPather(d);
 		pather.generatePath((int)Math.floor(x/scale), (int)Math.floor(y/scale), (int)Math.floor(cam.getX()/scale), (int)Math.floor(cam.getY()/scale));
 	
-		for( int i=0; i < pather.path.size(); i++ ) {
-			CoordTile t = pather.path.get(i).getData();
-			System.out.println("Path node: "+i+" "+t.x+" "+t.y);
+		if( pather.path != null ) {
+			for( int i=0; i < pather.path.size(); i++ ) {
+				CoordTile t = pather.path.get(i).getData();
+				System.out.println("Path node: "+i+" "+t.x+" "+t.y);
+			}
 		}
 		
 		ticks = (float) ((new Random()).nextFloat()*10.0); // <-- lol
