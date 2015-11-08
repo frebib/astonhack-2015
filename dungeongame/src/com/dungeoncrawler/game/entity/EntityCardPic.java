@@ -69,8 +69,13 @@ public class EntityCardPic extends Entity {
 					System.out.println("x: "+x+" y: "+y+" targetx: "+targetX+" targety: "+targetY);
 				}else {
 					// Update path
+					pather.generatePath((int)Math.floor(x/scale), (int)Math.floor(y/scale), (int)Math.floor(cam.getX()/scale), (int)Math.floor(cam.getY()/scale));
 				}
 			} else {
+				// Check 
+				
+				
+				// Move to target
 				int target = 0;
 				if( Math.abs( x - targetX) > 8 ){
 					x += 1*Math.signum(targetX - x);
