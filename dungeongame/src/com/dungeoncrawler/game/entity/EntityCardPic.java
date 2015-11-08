@@ -117,6 +117,7 @@ public class EntityCardPic extends Entity {
 		
 		///////////////////////////////////////////////////////////////
 		// Render Path
+		/*if( )
 		for( int i=0; i < pather.path.size(); i++ ) {
 			CoordTile t = pather.path.get(i).getData();
 			
@@ -127,7 +128,7 @@ public class EntityCardPic extends Entity {
 			Application3D.getApp().getRenderUtils().drawQuad(t.x*scale, t.y*scale, 4.0f, 8, 8);
 			
 		}
-		
+		*/
 		
 		
 	}
