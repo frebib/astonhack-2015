@@ -17,7 +17,10 @@ public class Dungeon {
     public Rectangle[] rooms;
     public int width, height;
     public Random generator;
-
+    public Node[][] tileNodes;
+    public ArrayList<Node<CoordTile>> nodes;
+    public ArrayList<Edge> corridors;
+    
     public Dungeon(GeneratorOptions opts) {
         Generator gen = new Generator(opts);
         generator = gen.rand;
@@ -26,15 +29,14 @@ public class Dungeon {
         for (int x = 0; x < tiles.length; x++)
             for (int y = 0; y < tiles[0].length; y++)
                 tiles[x][y] = Tile.EMPTY;
-
+        
+        this.width = opts.width;
+        this.height = opts.height;
         this.rooms = gen.genRooms();
         System.out.println(Arrays.toString(rooms));
         gen.addRooms(tiles, rooms);
         gen.genPaths(tiles, rooms);
-
-        this.width = opts.width;
-        this.height = opts.height;
-
+        generateGrid(true);
     }
 
     private class Generator {
@@ -90,7 +92,7 @@ public class Dungeon {
             for (int i = 0; i < rooms.length; i++)
                 points[i] = new Point2D.Double(rooms[i].getCenterX(), rooms[i].getCenterY());
 
-            ArrayList<Edge> corridors = new ArrayList<>();
+            corridors = new ArrayList<>();
             ArrayList<Point2D.Double> conn = new ArrayList<>(),
                     nconn = new ArrayList<>(Arrays.asList(points));
             conn.add(points[0]);
@@ -106,31 +108,9 @@ public class Dungeon {
                 corridors.add(new Edge(r1, closest));
             }
 
+            generateGrid(false);
             int w = tiles.length;
             int h = tiles[0].length;
-            Node[][] tileNodes = new Node[w][h];
-            // Add nodes
-            for (int x = 0; x < w; x++)
-                for (int y = 0; y < h; y++)
-                    tileNodes[x][y] = new Node<>(new CoordTile(tiles[x][y], x, y));
-
-            // Add node children
-            for (int x = 0; x < w; x++)
-                for (int y = 0; y < h; y++) {
-                    if (inRange(w, h, x + 1, y))
-                        tileNodes[x][y].addChild(tileNodes[x + 1][y]);
-                    if (inRange(w, h, x - 1, y))
-                        tileNodes[x][y].addChild(tileNodes[x - 1][y]);
-                    if (inRange(w, h, x, y + 1))
-                        tileNodes[x][y].addChild(tileNodes[x][y + 1]);
-                    if (inRange(w, h, x, y - 1))
-                        tileNodes[x][y].addChild(tileNodes[x][y - 1]);
-                }
-
-            ArrayList<Node<CoordTile>> nodes = new ArrayList<>(w * h);
-            for (int x = 0; x < w; x++)
-                nodes.addAll(Arrays.asList((Node<CoordTile>[]) tileNodes[x]).subList(0, h));
-
             Search<CoordTile> s = new Search<>(new PriorityQueue<>(), nodes);
             for (Edge c : corridors) {
                 Maybe<List<Node<CoordTile>>> maybPath = s.findPathFrom(tileNodes[((int) c.a.x)][((int) c.a.y)],
@@ -189,13 +169,68 @@ public class Dungeon {
                 }
         }
     }
+    
+    private void generateGrid(boolean clip){
+    	int w = tiles.length;
+        int h = tiles[0].length;
+        tileNodes = new Node[w][h];
+        // Add nodes
+        for (int x = 0; x < w; x++)
+            for (int y = 0; y < h; y++)
+                tileNodes[x][y] = new Node<>(new CoordTile(tiles[x][y], x, y));
+
+        // Add node children
+        for (int x = 0; x < w; x++)
+            for (int y = 0; y < h; y++) {
+            	if( !clip ) {
+	                if (inRange(w, h, x + 1, y))
+	                    tileNodes[x][y].addChild(tileNodes[x + 1][y]);
+	                if (inRange(w, h, x - 1, y))
+	                    tileNodes[x][y].addChild(tileNodes[x - 1][y]);
+	                if (inRange(w, h, x, y + 1))
+	                    tileNodes[x][y].addChild(tileNodes[x][y + 1]);
+	                if (inRange(w, h, x, y - 1))
+	                    tileNodes[x][y].addChild(tileNodes[x][y - 1]);
+            	}else{
+            		Tile t = ((CoordTile)tileNodes[x][y].getData()).tile;
+            		if( !t.walkable ) { continue; }
+            		if (inRange(w, h, x + 1, y)){
+            			Tile ta = ((CoordTile)tileNodes[x+1][y].getData()).tile;
+            			if( ta.walkable )
+            				tileNodes[x][y].addChild(tileNodes[x + 1][y]);
+            		}
+	                if (inRange(w, h, x - 1, y)){
+	                	Tile ta = ((CoordTile)tileNodes[x-1][y].getData()).tile;
+        				if( ta.walkable )
+        					tileNodes[x][y].addChild(tileNodes[x -1][y]);
+	                }
+	                if (inRange(w, h, x, y + 1)){
+	                	Tile ta = ((CoordTile)tileNodes[x][y+1].getData()).tile;
+        				if( ta.walkable )
+        					tileNodes[x][y].addChild(tileNodes[x][y+1]);
+	                }
+	                if (inRange(w, h, x, y - 1)){
+	                	Tile ta = ((CoordTile)tileNodes[x][y-1].getData()).tile;
+        				if( ta.walkable )
+        					tileNodes[x][y].addChild(tileNodes[x][y-1]);
+	                }
+		            
+		          
+            	}
+            }
+
+        nodes = new ArrayList<>(w * h);
+        for (int x = 0; x < w; x++)
+            nodes.addAll(Arrays.asList((Node<CoordTile>[]) tileNodes[x]).subList(0, h));
+    }
 
     private boolean inRange(int width, int height, int x, int y) {
         return (x > 0 && x < width) && (y > 0 && y < height);
     }
 
-    private class Edge {
-        Point2D.Double a, b;
+    public class Edge {
+        public Point2D.Double a;
+        public Point2D.Double b;
 
         public Edge(Point2D.Double a, Point2D.Double b) {
             this.a = a;
