@@ -42,7 +42,7 @@ public class Shader {
 	private float[][] lights;
 	
 	public Shader( String vertexShader, String fragmentShader ) {
-		lightBuffer = BufferUtils.createByteBuffer( 8 * 4 * 4 );
+		lightBuffer = BufferUtils.createByteBuffer( 16 * 4 * 4 );
 		// Load shader vertex and fragment component
 		vertexShaderIndex 	= loadShader( vertexShader, GL_VERTEX_SHADER );
 		fragmentShaderIndex = loadShader( fragmentShader, GL_FRAGMENT_SHADER );
@@ -76,7 +76,7 @@ public class Shader {
 		uniformLightingLocation           = glGetUniformLocation( programIndex, "lighting" );
 		Application3D.getApp().appCheckGLError( "SHADER END");
 		
-		lights = new float[8][4];
+		lights = new float[16][4];
 	}
 	
 	private int loadShader(String filename, int type) {
@@ -169,7 +169,7 @@ public class Shader {
 		
 		bufferedLights = lightBuffer.asFloatBuffer();
 		bufferedLights.rewind();
-		for ( int i=0; i < 8; i++ ) {
+		for ( int i=0; i < 16; i++ ) {
 			bufferedLights.put( lights[i] );
 		}
 		bufferedLights.flip();

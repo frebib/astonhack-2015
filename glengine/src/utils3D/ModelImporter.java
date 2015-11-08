@@ -109,6 +109,7 @@ public class ModelImporter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		vbo.prepareNormals();
 		vbo.freeze();
         return vbo;
 	}

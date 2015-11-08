@@ -28,6 +28,6 @@ void main(void) {
 	pass_Color = colour;
 	pass_TextureCoord = in_TextureCoord;
 	mat4 normalMatrix = matrixViewInverse*matrixModelInverse;
-	pass_Normal =in_Normal; /*normalize( normalMatrix * vec4(in_Normal, 1.0)).xyz;*/
+	pass_Normal =(matrixModel * vec4(in_Normal.xyz, 0.0)).xyz; /*normalize( normalMatrix * vec4(in_Normal, 1.0)).xyz;*/
 	pass_Pos = (matrixModel * in_Position).xyz;
 }
