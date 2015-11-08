@@ -137,7 +137,7 @@ public class Application3D extends Thread {
 			this.removeDestructibles();
 			
 			// Sync display
-			Display.sync( 60 );
+			Display.sync( 30 );
 			Display.update();
 		}
 		

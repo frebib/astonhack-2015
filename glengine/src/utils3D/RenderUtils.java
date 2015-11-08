@@ -119,14 +119,17 @@ public class RenderUtils {
      * @param width
      * @param height
      */
-    public void drawQuad( float x, float y, float width, float height ){
+    public void drawQuad( float x, float y, float z, float width, float height ){
        Matrix4f wm = Application3D.getApp().getWorldMatrix();
        wm.setIdentity();
-       wm.translate( new Vector2f( x, y) );
+       wm.translate( new Vector3f( x, y, z) );
        wm.scale( new Vector3f( width, height, 1 ) );
        Application3D.getApp().matrixWorldBind();
        this.vboQuad.render();
        wm.setIdentity();
+    }
+    public void drawQuad( float x, float y, float width, float height ){
+    	drawQuad( x, y, 0.0f, width, height );
     }
     
     public void drawQuadPlain( float x, float y, float width, float height, GColour colour ){
