@@ -37,6 +37,16 @@ public class Dungeon {
         gen.addRooms(tiles, rooms);
         gen.genPaths(tiles, rooms);
         generateGrid(true);
+        
+        // Gen outline boys
+        for (int x = 0; x < tiles.length; x++){
+        	tiles[x][0] = Tile.WALL;
+        	tiles[x][tiles[0].length-1] = Tile.WALL;
+        }
+        for (int y = 0; y < tiles[0].length; y++){
+        	tiles[0][y] = Tile.WALL;
+        	tiles[0][tiles.length-1] = Tile.WALL;
+        }
     }
 
     private class Generator {
@@ -126,7 +136,7 @@ public class Dungeon {
                         tiles[ct.x][ct.y] = Tile.CORRIDOR;
                 }
             }
-            for (int x = 1; x < w - 1; x++)
+            for (int x = 1; x < w - 1; x++){
                 for (int y = 1; y < h - 1; y++) {
                     if (tiles[x][y] != Tile.CORRIDOR)
                         continue;
@@ -138,13 +148,42 @@ public class Dungeon {
                     neighbours[3] = tiles[x][y - 1];
 
                     int count = 0;
+                    int wallP = 0;
                     for (Tile t : neighbours) {
                         count += t == Tile.ROOM || t == Tile.CORRIDOR ? 1 : 0;
                     }
-                    if (count > 2)
+                    if (count > 2){
                         tiles[x][y] = Tile.ROOM;
+                    }
                 }
-            for (int x = 0; x < w; x++)
+            }
+            // Stupid edge case
+            for (int x = 1; x < w - 1; x++){
+                for (int y = 1; y < h - 1; y++) {
+                    if (tiles[x][y] != Tile.CORRIDOR)
+                        continue;
+
+                    Tile[] neighbours = new Tile[4];
+                    neighbours[0] = tiles[x + 1][y];
+                    neighbours[1] = tiles[x - 1][y];
+                    neighbours[2] = tiles[x][y + 1];
+                    neighbours[3] = tiles[x][y - 1];
+
+                    int count = 0;
+                    int wallP = 0;
+                    for (Tile t : neighbours) {
+                        count += t == Tile.ROOM? 1 : 0;
+                        wallP += t == Tile.WALL? 1 : 0;
+                    }
+                    
+                    if (count == 2 && wallP == 2){
+                        tiles[x][y] = Tile.ROOM;
+                    }
+                }
+            }
+            
+            
+            for (int x = 0; x < w; x++){
                 for (int y = 0; y < h; y++) {
                     if (tiles[x][y] != Tile.EMPTY)
                         continue;
@@ -167,6 +206,7 @@ public class Dungeon {
                         }
                     }
                 }
+            }
         }
     }
     
