@@ -77,20 +77,13 @@ public class Dungeon {
 
         public void addRooms(Tile[][] tiles, Rectangle[] rooms) {
             for (Rectangle r : rooms) {
-                for (int x = 0; x < r.width + 2; x++)
-                    for (int y = 0; y < r.height + 2; y++) {
-                        if (x == 0 || y == 0 || x == r.width + 1 || y == r.height + 1) {
-                            if (tiles[x + r.x][y + r.y] == Tile.ROOM)
-                                continue;
-                            tiles[x + r.x][y + r.y] = Tile.WALL;
-                        }
-                        else
-                            tiles[x + r.x][y + r.y] = Tile.ROOM;
+                for (int x = 0; x < r.width; x++)
+                    for (int y = 0; y < r.height; y++) {
+                            tiles[x + 1 + r.x][y + 1 + r.y] = Tile.ROOM;
                     }
 
             }
         }
-
 
         public void genPaths(Tile[][] tiles, Rectangle[] rooms) {
             Point2D.Double[] points = new Point2D.Double[rooms.length];
@@ -153,6 +146,47 @@ public class Dungeon {
                         tiles[ct.x][ct.y] = Tile.CORRIDOR;
                 }
             }
+            for (int x = 1; x < w - 1; x++)
+                for (int y = 1; y < h - 1; y++) {
+                    if (tiles[x][y] != Tile.CORRIDOR)
+                        continue;
+
+                    Tile[] neighbours = new Tile[4];
+                    neighbours[0] = tiles[x + 1][y];
+                    neighbours[1] = tiles[x - 1][y];
+                    neighbours[2] = tiles[x][y + 1];
+                    neighbours[3] = tiles[x][y - 1];
+
+                    int count = 0;
+                    for (Tile t : neighbours) {
+                        count += t == Tile.ROOM || t == Tile.CORRIDOR ? 1 : 0;
+                    }
+                    if (count > 2)
+                        tiles[x][y] = Tile.ROOM;
+                }
+            for (int x = 0; x < w; x++)
+                for (int y = 0; y < h; y++) {
+                    if (tiles[x][y] != Tile.EMPTY)
+                        continue;
+
+                    if (x == 0 || y == 0 || x == w - 1 || y == h - 1) {
+                        tiles[x][y] = Tile.WALL;
+                        continue;
+                    }
+
+                    Tile[] neighbours = new Tile[4];
+                    neighbours[0] = tiles[x + 1][y];
+                    neighbours[1] = tiles[x - 1][y];
+                    neighbours[2] = tiles[x][y + 1];
+                    neighbours[3] = tiles[x][y - 1];
+
+                    for (Tile t : neighbours) {
+                        if (t == Tile.ROOM || t == Tile.CORRIDOR) {
+                            tiles[x][y] = Tile.WALL;
+                            break;
+                        }
+                    }
+                }
         }
     }
 
