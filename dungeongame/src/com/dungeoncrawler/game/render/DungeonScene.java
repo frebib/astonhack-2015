@@ -47,6 +47,8 @@ public class DungeonScene implements Renderer3D {
 	private Random generator;
 	
 	float camWobbleBoyes;
+
+	float vspeed = 0f;
 	
 	boolean placed = false;
 	
@@ -348,7 +350,8 @@ public class DungeonScene implements Renderer3D {
 		
 		float yaw, speed;
 		yaw   = cam.getYaw();
-		speed = 2.0f;
+		speed = 1.0f;
+
 		
 		
 		direction.set((float) Math.cos(yaw + Math.PI / 2.0) * speed, (float) Math.sin(yaw + Math.PI / 2.0) * speed, 0);
@@ -400,6 +403,24 @@ public class DungeonScene implements Renderer3D {
 			//direction.set((float) Math.cos(yaw) * speed, (float) Math.sin(yaw) * speed, 0);
 			//Vector3f.add(position, direction, position);
 		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE))
+		{
+			if(position.z == 16f)
+			{
+				vspeed = 2f;
+			}
+		}
+		if (position.z + vspeed <= 16)
+		{
+			vspeed = 0;
+			position.z = 16;
+		}
+		else
+		{
+			vspeed-=0.1f;
+		}
+		System.out.println(vspeed);
+		position.z += vspeed;
 		
 		if( pressed ) {
 			cam.wobble += 0.38*direction.length();
