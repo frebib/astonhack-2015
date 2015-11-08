@@ -54,11 +54,11 @@ public class Dungeon {
                 Rectangle room;
                 do {
                     int min = opts.minRoomSize;
-                    int size = opts.maxRoomSize - min;
+                    int size = opts.maxRoomSize - min + 1;
 
                     int width = min + rand.nextInt(size), height = min + rand.nextInt(size);
-                    room = new Rectangle(rand.nextInt(opts.width - width),
-                            rand.nextInt(opts.height - height), width, height);
+                    room = new Rectangle(rand.nextInt(opts.width - width - 2) + 1,
+                            rand.nextInt(opts.height - height - 2) + 1, width, height);
 
                     collides = false;
                     for (Rectangle r : rooms) {
@@ -77,10 +77,17 @@ public class Dungeon {
 
         public void addRooms(Tile[][] tiles, Rectangle[] rooms) {
             for (Rectangle r : rooms) {
-                System.out.println(r);
-                for (int x = 0; x < r.width; x++)
-                    for (int y = 0; y < r.height; y++)
-                        tiles[x + r.x][y + r.y] = Tile.ROOM;
+                for (int x = 0; x < r.width + 2; x++)
+                    for (int y = 0; y < r.height + 2; y++) {
+                        if (x == 0 || y == 0 || x == r.width + 1 || y == r.height + 1) {
+                            if (tiles[x + r.x][y + r.y] == Tile.ROOM)
+                                continue;
+                            tiles[x + r.x][y + r.y] = Tile.WALL;
+                        }
+                        else
+                            tiles[x + r.x][y + r.y] = Tile.ROOM;
+                    }
+
             }
         }
 
@@ -95,7 +102,6 @@ public class Dungeon {
                     nconn = new ArrayList<>(Arrays.asList(points));
             conn.add(points[0]);
             nconn.remove(points[0]);
-            System.out.println(conn);
             for (Point2D.Double r1 : nconn) {
                 Point2D.Double closest = conn.get(0);
                 for (Point2D.Double r2 : conn)
