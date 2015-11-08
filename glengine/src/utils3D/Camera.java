@@ -52,6 +52,7 @@ public class Camera {
 	private float yaw = (float) Math.PI;
 	private float pitch = -0.5944446f;
 	private float roll;
+	public float wobble = 0;
 
 	// Single-tap button control
 	private boolean keyQPressed, keyEPressed;
@@ -138,12 +139,18 @@ public class Camera {
 	 * build matrix. - Buffer the matrix so it can be streamed to the GPU.
 	 */
 	private void prepareViewMatrix() {
+		float pitchWob, yawWob, rollWob;
+		pitchWob = (float) (Math.cos(wobble*0.5 + 15.0)*0.01f);
+		yawWob   = (float) (Math.sin(wobble*0.3 + 10.0)*0.02f);
+		rollWob  = (float) (Math.sin(wobble*0.4)*0.02f);
 		matrixView.setIdentity();
-
-		matrixView.rotate(pitch, new Vector3f(1, 0, 0));
-		matrixView.rotate(-yaw, new Vector3f(0, 0, 1));
+		
+		matrixView.rotate(pitch+pitchWob, new Vector3f(1, 0, 0));
+		matrixView.rotate( roll + rollWob, new Vector3f(0, 1, 0));
+		matrixView.rotate(-yaw+yawWob, new Vector3f(0, 0, 1));
+		
 		matrixView.translate(new Vector3f(-positionSmooth.x, -positionSmooth.y, -positionSmooth.z));
-
+		
 		matrixView.store(bufferedMatrixView);
 
 		bufferedMatrixView.flip();
@@ -298,6 +305,7 @@ public class Camera {
 	
 	public void setPosition( Vector3f position ){
 		this.position = position;
+		this.positionSmooth = position;
 	}
 	
 	public Vector3f getDirection(){
