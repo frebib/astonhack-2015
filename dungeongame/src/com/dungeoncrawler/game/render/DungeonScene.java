@@ -9,9 +9,16 @@ import utils3D.RenderUtils;
 import utils3D.Texture;
 import utils3D.VertexBuffer;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -79,13 +86,26 @@ public class DungeonScene implements Renderer3D {
 		
 		// ********************************************** //
 		// Load shit off wikipedia
+		Texture[] tex = new Texture[10];
+		int texCount = 0;
 		WikiPage wp = null;
 		try {
 			wp = WikiReader.getPage(/*WikiReader.getRandomPage()*/"Queen_(band)");
-			
+			for( int i=0; i < wp.imageURLs.length; i++ ){
+				String s =  wp.imageURLs[i];
+				if( s.contains(".png") || s.contains(".jpg")) {
+					@SuppressWarnings("deprecation")
+					URL url = new URL( /*URLEncoder.encode(*/s/*)*/);
+					Image image = ImageIO.read(url); 
+					tex[texCount] = Application3D.getApp().getResources().loadTexture(toBufferedImage(image), "img"+texCount);
+					texCount ++;
+				}
+				
+			}
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
 			System.out.println("BODIED");
 			System.exit(1);
 		}
@@ -209,8 +229,16 @@ public class DungeonScene implements Renderer3D {
 			for( int j=0; j < mapSize && maxEntities > 0; j++ ) {
 				if( map[i][j] == Tile.ROOM ) {
 					if( generator.nextInt(10) == 1 ) {
+						Texture mtex;
+						if( texCount > 1) {
+							mtex = tex[generator.nextInt(texCount-1)];
+						}else if( texCount > 0) {
+							mtex = tex[0];
+						} else {
+							mtex = texWall;
+						}
 						// Spawn entity
-						EntityCardPic ecp = new EntityCardPic(texWall, entityModel, (i+0.5f)*scale, (j+0.5f)*scale, 5, 10, d, scale);
+						EntityCardPic ecp = new EntityCardPic(mtex, entityModel, (i+0.5f)*scale, (j+0.5f)*scale, 5, 10, d, scale);
 						entities.add( ecp );
 						maxEntities --;
 						//System.out.println("Entity spawned!");
@@ -775,6 +803,25 @@ public class DungeonScene implements Renderer3D {
 	
 	public float sign( float x){
 		return (x>=0)?1:-1;
+	}
+	
+	public static BufferedImage toBufferedImage(Image img)
+	{
+	    if (img instanceof BufferedImage)
+	    {
+	        return (BufferedImage) img;
+	    }
+
+	    // Create a buffered image with transparency
+	    BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+	    // Draw the image on to the buffered image
+	    Graphics2D bGr = bimage.createGraphics();
+	    bGr.drawImage(img, 0, 0, null);
+	    bGr.dispose();
+
+	    // Return the buffered image
+	    return bimage;
 	}
 
 }
